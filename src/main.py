@@ -1,6 +1,4 @@
 import sys
-#import magic
-#from typing import Dict
 
 import image_video_time_utilities as iv_util
 

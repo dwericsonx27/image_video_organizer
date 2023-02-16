@@ -1,21 +1,22 @@
-#import sys
 import os
 import time
-import magic
-import subprocess
-#  pip3 install python-magic
 
+import magic
+#pip3 install python-magic
+
+import subprocess
 from typing import Dict
 
 import exifread
-# pip install exifread
+#pip3 install exifread
 
 import filecmp
 from shutil import copyfile
+from typing import Tuple
 
-def process_args(arg_list):
-    if len(arg_list) == 2:
-        return True, arg_list[0], arg_list[1]
+def process_args(arg_list) -> Tuple[bool, str, str]:
+    if len(arg_list) == 3:
+        return True, arg_list[1], arg_list[2]
     else:
         return False, "", ""
 
