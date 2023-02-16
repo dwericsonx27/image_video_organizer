@@ -20,7 +20,7 @@ def process_args(arg_list) -> Tuple[bool, str, str]:
     else:
         return False, "", ""
 
-def process_folder(src_folder, dst_folder):
+def process_folder(src_folder, dst_folder) -> None:
     f_types = magic.Magic(mime=True)
     occurences: Dict[str, int] = {}
 
@@ -55,13 +55,13 @@ def process_folder(src_folder, dst_folder):
         print(f"ERROR: {e}")
 
 
-def find_files(source_dir, file_ext):
+def find_files(source_dir, file_ext) -> None:
     for dirpath, dirnames, filenames in os.walk(source_dir):
         for f_name in filenames:
             if f_name.endswith(file_ext):
                 yield os.path.join(dirpath, f_name)
 
-def file_already_exists(out_dir: str, file_time: str, sub_filename: str):
+def file_already_exists(out_dir: str, file_time: str, sub_filename: str) -> None:
     if os.path.exists(out_dir):
         file_list = os.listdir(out_dir)
         for f in file_list:
@@ -71,7 +71,7 @@ def file_already_exists(out_dir: str, file_time: str, sub_filename: str):
                     return True
     return False
 
-def process_image(file_name: str, dest_dir: str, extention: str):
+def process_image(file_name: str, dest_dir: str, extention: str) -> None:
     try:
         year, hr_min_sec, filename, filetime, mon, day, hr, min, sec, model = jpeg_name(file_name)
         out_dir = os.path.join(os.path.join(dest_dir, year), hr_min_sec)
@@ -114,7 +114,7 @@ def process_image(file_name: str, dest_dir: str, extention: str):
         except Exception as e2:
             print(f'Exception: {e2}')
 
-def jpeg_name(image_file_name: str):
+def jpeg_name(image_file_name: str) -> None:
 
     with open(image_file_name, 'rb') as image_file:
         tags = exifread.process_file(image_file)
@@ -155,7 +155,7 @@ def jpeg_name(image_file_name: str):
 def process_mp4(file_name: str, dest_dir: str) -> None:
     pass
 
-def process_video(file_name: str, dest_dir: str):
+def process_video(file_name: str, dest_dir: str) -> None:
     # Set the command
     command = f'mediainfo -f {file_name}'
 
