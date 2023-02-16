@@ -1,6 +1,7 @@
 import unittest
 import sys
-sys.path.append('../src')
+sys.path.append('../src')  #needed for command line execution
+sys.path.append('src')  # needed for execution via Visual Studio Code
 
 import image_video_time_utilities
 
