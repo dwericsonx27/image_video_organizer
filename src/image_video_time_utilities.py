@@ -61,7 +61,7 @@ def find_files(source_dir, file_ext) -> None:
             if f_name.endswith(file_ext):
                 yield os.path.join(dirpath, f_name)
 
-def file_already_exists(out_dir: str, file_time: str, sub_filename: str) -> None:
+def file_already_exists(out_dir: str, file_time: str, sub_filename: str) -> bool:
     if os.path.exists(out_dir):
         file_list = os.listdir(out_dir)
         for f in file_list:
@@ -114,7 +114,7 @@ def process_image(file_name: str, dest_dir: str, extention: str) -> None:
         except Exception as e2:
             print(f'Exception: {e2}')
 
-def jpeg_name(image_file_name: str) -> None:
+def jpeg_name(image_file_name: str) -> Tuple[str, str, str, str, str, str, str, str, str, str] :
 
     with open(image_file_name, 'rb') as image_file:
         tags = exifread.process_file(image_file)
