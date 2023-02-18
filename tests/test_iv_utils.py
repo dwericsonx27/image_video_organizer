@@ -1,9 +1,17 @@
 import unittest
+import os
 import sys
 sys.path.append('../src')  #needed for command line execution
 sys.path.append('src')  # needed for execution via Visual Studio Code
 
 import image_video_time_utilities as iv_util
+
+def create_file(file_name : str, content : str) -> bool:
+    rtnval = False
+    with open(file_name, "w") as fp:
+        fp.write(f"{content}")
+        rtnval = True
+    return rtnval
 
 class TestImageVideoTimeUtilities(unittest.TestCase):
 
@@ -56,6 +64,42 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         self.assertEqual(False, flag)
         self.assertEqual("", a2)
         self.assertEqual("", a3)
+
+    def test_identical_file_already_exists_missing(self):
+
+        #iv_util.process_folder("/tmp/t1", "/tmp/t2")
+
+        file_name = "/tmp/zzzzz.123"
+        try:
+            self.assertTrue(create_file(file_name, "Junk"))
+            self.assertFalse(iv_util.identical_file_already_exists("/tmp/", "abc", file_name))
+        finally:
+            os.remove(file_name)
+
+    def test_identical_file_already_exists_found_same_content(self):
+
+        file_name_1 = "/tmp/zzzzz.1"
+        file_name_2 = "/tmp/zzzzz.2"
+        try:
+            self.assertTrue(create_file(file_name_1, "Junk"))
+            self.assertTrue(create_file(file_name_2, "Junk"))
+            self.assertTrue(iv_util.identical_file_already_exists("/tmp/", "zzzzz", file_name_2))
+        finally:
+            os.remove(file_name_1)
+            os.remove(file_name_2)
+
+    @unittest.skip("Need to use different folders for this to work")
+    def test_identical_file_already_exists_found_different_content(self):
+
+        file_name_1 = "/tmp/zzzzz.1"
+        file_name_2 = "/tmp/zzzzz.2"
+        try:
+            self.assertTrue(create_file(file_name_1, "Junk"))
+            self.assertTrue(create_file(file_name_2, "Different Junk"))
+            self.assertFalse(iv_util.identical_file_already_exists("/tmp/", "zzzzz", file_name_2))
+        finally:
+            os.remove(file_name_1)
+            os.remove(file_name_2)
 
 
 if __name__ == '__main__':

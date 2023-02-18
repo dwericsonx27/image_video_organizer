@@ -14,6 +14,12 @@ import filecmp
 from shutil import copyfile
 from typing import Tuple
 
+def find_files(source_dir, file_ext):
+    for dirpath, dirnames, filenames in os.walk(source_dir):
+        for f_name in filenames:
+            if f_name.endswith(file_ext):
+                yield os.path.join(dirpath, f_name)
+                
 def process_args(arg_list) -> Tuple[bool, str, str]:
     if len(arg_list) == 3:
         return True, arg_list[1], arg_list[2]
@@ -25,25 +31,25 @@ def process_folder(src_folder, dst_folder) -> None:
     occurences: Dict[str, int] = {}
 
     try:
-        for f in iv_util.find_files(source_dir, ""):
+        for fullpath_filename in find_files(src_folder, ""):
             file_type = None
             try:
-                file_type = f_types.from_file(f)
-                print(f"filename : {f}, {file_type}")
+                file_type = f_types.from_file(fullpath_filename)
+                print(f"filename : {fullpath_filename}, {file_type}")
                 if file_type == "image/jpeg": 
-                    process_image(f, dest_dir, "jpg")
+                    process_image(fullpath_filename, dst_folder, "jpg")
 
                 elif file_type == "video/mp4":
-                    process_mp4(f, dest_dir)
+                    process_mp4(fullpath_filename, dst_folder)
 
                 elif file_type == "video/x-msvideo":
-                    process_video(f, dest_dir)
+                    process_video(fullpath_filename, dst_folder)
 
                 elif file_type == "video/quicktime":
-                    process_video(f, dest_dir)
+                    process_video(fullpath_filename, dst_folder)
 
                 elif file_type == "image/tiff":
-                    process_image(f, dest_dir, "NEF")
+                    process_image(fullpath_filename, dst_folder, "NEF")
 
             except Exception as e:
                 print(f"file type exception : {e}")
@@ -55,34 +61,41 @@ def process_folder(src_folder, dst_folder) -> None:
         print(f"ERROR: {e}")
 
 
-def find_files(source_dir, file_ext) -> None:
-    for dirpath, dirnames, filenames in os.walk(source_dir):
-        for f_name in filenames:
-            if f_name.endswith(file_ext):
-                yield os.path.join(dirpath, f_name)
+#def find_files(source_dir, file_ext) -> None:
+#    for dirpath, dirnames, filenames in os.walk(source_dir):
+#        for f_name in filenames:
+#            if f_name.endswith(file_ext):
+#                yield os.path.join(dirpath, f_name)
 
-def file_already_exists(out_dir: str, file_time: str, sub_filename: str) -> bool:
+def identical_file_already_exists(out_dir: str, file_name_no_extension: str, src_full_filename: str) -> bool:
+    if len(out_dir) == 0:
+        return False
+    if len(file_name_no_extension) == 0:
+        return False
+    if len(src_full_filename) == 0:
+        return False
+    
     if os.path.exists(out_dir):
         file_list = os.listdir(out_dir)
         for f in file_list:
-            if f.find(file_time) >= 0:
+            if f.find(file_name_no_extension) >= 0:  #note that extension name can not be guarenteed
                 found_name = os.path.join(out_dir, f)
-                if filecmp.cmp(found_name, sub_filename):
+                if filecmp.cmp(found_name, src_full_filename):
                     return True
     return False
 
-def process_image(file_name: str, dest_dir: str, extention: str) -> None:
+def process_image(fullpath_filename: str, dest_dir: str, extention: str) -> None:
     try:
-        year, hr_min_sec, filename, filetime, mon, day, hr, min, sec, model = jpeg_name(file_name)
+        year, hr_min_sec, filename, yyyymmdd_hhmmss, mon, day, hr, min, sec, model = jpeg_name(fullpath_filename)
         out_dir = os.path.join(os.path.join(dest_dir, year), hr_min_sec)
         out_file = os.path.join(out_dir, filename)
         if os.path.isfile(out_file):
-            if filecmp.cmp(out_file, file_name):
-                print(f'DELETE {file_name}.')
+            if filecmp.cmp(out_file, fullpath_filename):
+                print(f'DELETE {fullpath_filename}.')
                 time.sleep(0.2)
-                os.remove(file_name)
+                os.remove(fullpath_filename)
             else:
-                print(f'COPY {file_name} ADD UNIQUE DESIGNATOR.')
+                print(f'COPY {fullpath_filename} ADD UNIQUE DESIGNATOR.')
                 i = 1
                 out_file = os.path.join(out_dir, f'{year}{mon}{day}_{hr}{min}{sec}_{model}_{i}.{extention}' )
                 while os.path.isfile(out_file):
@@ -90,26 +103,26 @@ def process_image(file_name: str, dest_dir: str, extention: str) -> None:
                     out_file = os.path.join(out_dir, f'{year}{mon}{day}_{hr}{min}{sec}_{model}_{i}.{extention}' )
                 # Copy file over.
                 os.makedirs(out_dir, exist_ok=True)
-                copyfile(file_name, out_file)
-                os.remove(file_name)
-                print(f'Copied {file_name} to {out_file}')
+                copyfile(fullpath_filename, out_file)
+                os.remove(fullpath_filename)
+                print(f'Copied {fullpath_filename} to {out_file}')
         else:
             # Open the directory and look for a file of a similar name.
-            if file_already_exists(out_dir, filetime, file_name):
-                print(f'DELETE {file_name}.')
+            if identical_file_already_exists(out_dir, yyyymmdd_hhmmss, fullpath_filename):
+                print(f'DELETE {fullpath_filename}.')
                 time.sleep(0.2)
-                os.remove(file_name)
+                os.remove(fullpath_filename)
                 # so we should be able to delete the source....
             else:
                 # Copy file over.
                 os.makedirs(out_dir, exist_ok=True)
-                copyfile(file_name, out_file)
-                os.remove(file_name)
-                print(f'Copied {file_name} to {out_file}')
+                copyfile(fullpath_filename, out_file)
+                os.remove(fullpath_filename)
+                print(f'Copied {fullpath_filename} to {out_file}')
     except Exception as e:
         print(f'EXIF data not found, using media info instead.')
         try:
-            process_video(file_name, dest_dir)
+            process_video(fullpath_filename, dest_dir)
             print(f'EXIF data not found, using media info instead.')
         except Exception as e2:
             print(f'Exception: {e2}')
@@ -267,7 +280,7 @@ def process_video(file_name: str, dest_dir: str) -> None:
                     else:
                         # Open the directory and look for a file of a similar name.
                         file_time= f'{year}{mon}{day}_{hr}{min}{sec}'
-                        if file_already_exists(out_dir, file_time, file_name):
+                        if identical_file_already_exists(out_dir, file_time, file_name):
                             print(f'DELETE {file_name}.')
                             time.sleep(0.2)
                             os.remove(file_name)
