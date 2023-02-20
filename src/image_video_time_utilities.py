@@ -61,12 +61,6 @@ def process_folder(src_folder, dst_folder) -> None:
         print(f"ERROR: {e}")
 
 
-#def find_files(source_dir, file_ext) -> None:
-#    for dirpath, dirnames, filenames in os.walk(source_dir):
-#        for f_name in filenames:
-#            if f_name.endswith(file_ext):
-#                yield os.path.join(dirpath, f_name)
-
 def identical_file_already_exists(out_dir: str, file_name_no_extension: str, src_full_filename: str) -> bool:
     if len(out_dir) == 0:
         return False
