@@ -26,41 +26,6 @@ def process_args(arg_list) -> Tuple[bool, str, str]:
     else:
         return False, "", ""
 
-def process_folder(src_folder, dst_folder) -> None:
-    f_types = magic.Magic(mime=True)
-    occurences: Dict[str, int] = {}
-
-    try:
-        for fullpath_filename in find_files(src_folder, ""):
-            file_type = None
-            try:
-                file_type = f_types.from_file(fullpath_filename)
-                print(f"filename : {fullpath_filename}, {file_type}")
-                if file_type == "image/jpeg": 
-                    process_image(fullpath_filename, dst_folder, "jpg")
-
-                elif file_type == "video/mp4":
-                    process_mp4(fullpath_filename, dst_folder)
-
-                elif file_type == "video/x-msvideo":
-                    process_video(fullpath_filename, dst_folder)
-
-                elif file_type == "video/quicktime":
-                    process_video(fullpath_filename, dst_folder)
-
-                elif file_type == "image/tiff":
-                    process_image(fullpath_filename, dst_folder, "NEF")
-
-            except Exception as e:
-                print(f"file type exception : {e}")
-
-    except FileNotFoundError:
-        print(f"ERROR: source directory ({source_dir}) does not exist!")
-
-    except Exception as e:
-        print(f"ERROR: {e}")
-
-
 def identical_file_already_exists(out_dir: str, file_name_no_extension: str, src_full_filename: str) -> bool:
     if len(out_dir) == 0:
         return False
@@ -149,6 +114,44 @@ def jpeg_name(image_file_name: str) -> Tuple[str, str, str, str, str, str, str, 
             file_name = f'{file_time}_{model}.jpg'
 
             return year, year_mon_day, file_name, file_time, mon, day, hr, min, sec, model
+        except Exception as e:
+            print(f'EXIF DateTimeOriginal not found!')
+            print(f'number of tags = {len(tags)}')
+            print(f'tags: {type(tags)}')
+            for t in tags:
+                print(f'tag: {t}')
+            print("========================================")
+            raise e
+        
+def jpeg_info(image_file_name : str) -> Dict:
+    info = dict()
+
+    with open(image_file_name, 'rb') as image_file:
+        tags = exifread.process_file(image_file)
+
+        try:
+            origination = str(tags["EXIF DateTimeOriginal"])
+
+            info['model'] = str(tags["Image Model"]).replace(" ", "-").upper()
+            #  COOLPIX P600
+            # filename: 20190112_114819_SM-S906L
+            # directory: 2019_01_12
+
+            yearmonday = origination[0:10].replace(":", "")
+            info['year'] = yearmonday[0:4]
+            info['mon'] = yearmonday[4:6]
+            info['day'] = yearmonday[6:8]
+           
+            info['year_mon_day'] = f"{info['year']}_{info['mon']}_{info['day']}"
+            hrminsec = origination[11:19].replace(":", "")
+            info['hr'] = hrminsec[0:2]
+            info['min'] = hrminsec[2:4]
+            info['sec'] = hrminsec[4:6]
+
+            info['file_time'] = f'{yearmonday}_{hrminsec}'
+            info['file_name'] = f"{info['file_time']}_{info['model']}.jpg"
+
+            return info
         except Exception as e:
             print(f'EXIF DateTimeOriginal not found!')
             print(f'number of tags = {len(tags)}')
@@ -294,3 +297,41 @@ def process_video(file_name: str, dest_dir: str) -> None:
             print(f'Date tag not found in file: {file_name}')
             for s in stdout_values:
                 print(f'tag: {s}')
+
+def process_folder(src_folder, dst_folder) -> None:
+    f_types = magic.Magic(mime=True)
+    occurences: Dict[str, int] = {}
+
+    try:
+        for fullpath_filename in find_files(src_folder, ""):
+            file_type = None
+            file_info: Dict[str, str] = {}
+            try:
+                file_type = f_types.from_file(fullpath_filename)
+                print(f"filename : {fullpath_filename}, {file_type}")
+                if file_type == "image/jpeg": 
+                    #process_image(fullpath_filename, dst_folder, "jpg")
+                    file_info = jpeg_info(fullpath_filename)
+                    for key, value in file_info.items():
+                        print(f'{key}, {value}')
+
+                elif file_type == "video/mp4":
+                    process_mp4(fullpath_filename, dst_folder)
+
+                elif file_type == "video/x-msvideo":
+                    process_video(fullpath_filename, dst_folder)
+
+                elif file_type == "video/quicktime":
+                    process_video(fullpath_filename, dst_folder)
+
+                elif file_type == "image/tiff":
+                    process_image(fullpath_filename, dst_folder, "NEF")
+
+            except Exception as e:
+                print(f"file type exception : {e}")
+
+    except FileNotFoundError:
+        print(f"ERROR: source directory ({source_dir}) does not exist!")
+
+    except Exception as e:
+        print(f"ERROR: {e}")
