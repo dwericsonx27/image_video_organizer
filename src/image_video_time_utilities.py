@@ -85,7 +85,7 @@ def process_image(fullpath_filename: str, dest_dir: str, extention: str) -> None
             print(f'EXIF data not found, using media info instead.')
         except Exception as e2:
             print(f'Exception: {e2}')
-
+            
 def jpeg_name(image_file_name: str) -> Tuple[str, str, str, str, str, str, str, str, str, str] :
 
     with open(image_file_name, 'rb') as image_file:
@@ -160,6 +160,48 @@ def jpeg_info(image_file_name : str) -> Dict:
                 print(f'tag: {t}')
             print("========================================")
             raise e
+
+def process_file(fullpath_filename: str, dest_dir: str, extention: str, info : Dict) -> bool:
+    try:
+        out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])
+        out_file = os.path.join(out_dir, info['filename'])
+        if os.path.isfile(out_file):
+            if filecmp.cmp(out_file, fullpath_filename):
+                print(f'DELETE {fullpath_filename}.')
+                time.sleep(0.2)
+                os.remove(fullpath_filename)
+            else:
+                print(f'COPY {fullpath_filename} ADD UNIQUE DESIGNATOR.')
+                i = 1
+                out_file = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{extention}" )
+                while os.path.isfile(out_file):
+                    i = i + 1
+                    out_file = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{extention}" )
+                # Copy file over.
+                os.makedirs(out_dir, exist_ok=True)
+                copyfile(fullpath_filename, out_file)
+                os.remove(fullpath_filename)
+                print(f'Copied {fullpath_filename} to {out_file}')
+        else:
+            # Open the directory and look for a file of a similar name.
+            if identical_file_already_exists(out_dir, info['yyyymmdd_hhmmss'], fullpath_filename):
+                print(f'DELETE {fullpath_filename}.')
+                time.sleep(0.2)
+                os.remove(fullpath_filename)
+                # so we should be able to delete the source....
+            else:
+                # Copy file over.
+                os.makedirs(out_dir, exist_ok=True)
+                copyfile(fullpath_filename, out_file)
+                os.remove(fullpath_filename)
+                print(f'Copied {fullpath_filename} to {out_file}')
+    except Exception as e:
+        print(f'EXIF data not found, using media info instead.')
+        try:
+            process_video(fullpath_filename, dest_dir)
+            print(f'EXIF data not found, using media info instead.')
+        except Exception as e2:
+            print(f'Exception: {e2}')
 
 
 def process_mp4(file_name: str, dest_dir: str) -> None:
