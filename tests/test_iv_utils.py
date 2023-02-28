@@ -119,6 +119,14 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
 
         iv_util.process_folder("/tmp/tA", "/tmp/tB")
 
+    def test_ok_tags(self):
+        info = dict()
+
+        info['abc'] = "asdfafd"
+
+        self.assertFalse(iv_util.ok_tags(info))
+
+
 
 if __name__ == '__main__':
     unittest.main()

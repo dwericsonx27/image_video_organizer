@@ -163,34 +163,34 @@ def jpeg_info(image_file_name : str) -> Dict:
         
 
 def ok_tags(info : Dict) -> bool:
-    if len(info['model']) >= 0:
+    if not info.get('model') or len(info['model']) >= 0:
         return False
     
-    if len(info['year']) != 4:
+    if not info.get('year') or len(info['year']) != 4:
         return False
     
-    if len(info['mon']) != 2:
+    if not info.get('mon') or len(info['mon']) != 2:
         return False
     
-    if len(info['day']) != 2:
+    if not info.get('day') or len(info['day']) != 2:
         return False
     
-    if len(info['hr']) != 2:
+    if not info.get('hr') or len(info['hr']) != 2:
         return False
     
-    if len(info['min']) != 2:
+    if not info.get('min') or len(info['min']) != 2:
         return False
     
-    if len(info['sec']) != 2:
+    if not info.get('sec') or len(info['sec']) != 2:
         return False
     
-    if len(info['year_mon_day']) != 10:
+    if not info.get('year_mon_day') or len(info['year_mon_day']) != 10:
         return False
     
-    if len(info['file_time']) != 17:
+    if not info.get('file_time') or len(info['file_time']) != 17:
         return False
     
-    if len(info['file_name']) < 17:
+    if not info.get('file_name') or len(info['file_name']) < 17:
         return False
     
     return True
