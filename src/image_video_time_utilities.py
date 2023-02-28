@@ -160,6 +160,42 @@ def jpeg_info(image_file_name : str) -> Dict:
                 print(f'tag: {t}')
             print("========================================")
             raise e
+        
+
+def ok_tags(info : Dict) -> bool:
+    if len(info['model']) >= 0:
+        return False
+    
+    if len(info['year']) != 4:
+        return False
+    
+    if len(info['mon']) != 2:
+        return False
+    
+    if len(info['day']) != 2:
+        return False
+    
+    if len(info['hr']) != 2:
+        return False
+    
+    if len(info['min']) != 2:
+        return False
+    
+    if len(info['sec']) != 2:
+        return False
+    
+    if len(info['year_mon_day']) != 10:
+        return False
+    
+    if len(info['file_time']) != 17:
+        return False
+    
+    if len(info['file_name']) < 17:
+        return False
+    
+    return True
+    
+
 
 def process_file(fullpath_filename: str, dest_dir: str, extention: str, info : Dict) -> bool:
     try:
