@@ -163,34 +163,70 @@ def jpeg_info(image_file_name : str) -> Dict:
         
 
 def ok_tags(info : Dict) -> bool:
-    if not info.get('model') or len(info['model']) >= 0:
+    if not info.get('model') or len(info['model']) < 1:
         return False
     
     if not info.get('year') or len(info['year']) != 4:
         return False
     
+    if int(info['year']) >= 3000:
+        return False
+    
+    if int(info['year']) < 0:
+        return False
+    
     if not info.get('mon') or len(info['mon']) != 2:
+        return False
+    
+    if int(info['mon']) >= 13:
+        return False
+    
+    if int(info['mon']) < 1:
         return False
     
     if not info.get('day') or len(info['day']) != 2:
         return False
     
+    if int(info['day']) >= 32:
+        return False
+    
+    if int(info['day']) < 0:
+        return False
+    
     if not info.get('hr') or len(info['hr']) != 2:
+        return False
+    
+    if int(info['hr']) >= 24:
+        return False
+    
+    if int(info['hr']) < 0:
         return False
     
     if not info.get('min') or len(info['min']) != 2:
         return False
     
+    if int(info['min']) >= 60:
+        return False
+    
+    if int(info['min']) < 0:
+        return False
+    
     if not info.get('sec') or len(info['sec']) != 2:
+        return False
+    
+    if int(info['sec']) >= 60:
+        return False
+    
+    if int(info['sec']) < 0:
         return False
     
     if not info.get('year_mon_day') or len(info['year_mon_day']) != 10:
         return False
     
-    if not info.get('file_time') or len(info['file_time']) != 17:
+    if not info.get('file_time') or len(info['file_time']) != 15:
         return False
     
-    if not info.get('file_name') or len(info['file_name']) < 17:
+    if not info.get('file_name') or len(info['file_name']) < 15:
         return False
     
     return True

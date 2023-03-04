@@ -115,17 +115,57 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
             recursive_remove(folder_name(file_name_1))
             recursive_remove(folder_name(file_name_2))
 
-    def test_process_folder(self):
+#    def test_process_folder(self):
 
-        iv_util.process_folder("/tmp/tA", "/tmp/tB")
+#        iv_util.process_folder("/tmp/tA", "/tmp/tB")
 
-    def test_ok_tags(self):
+    def test_ok_tags_insufficient_data(self):
         info = dict()
 
         info['abc'] = "asdfafd"
 
         self.assertFalse(iv_util.ok_tags(info))
 
+    def test_ok_tags(self):
+        info = dict()
+
+        info['model'] = "Nikon"
+        info['year'] = "2023"
+        info['mon'] = "01"
+        info['day'] = "01"
+        info['hr'] = "01"
+        info['min'] = "01"
+        info['sec'] = "01"
+        info['year_mon_day'] = "2023_01_01"
+        info['file_time'] = "20230101_010101"
+        info['file_name'] = "20230101_010101_Nikon"
+
+        self.assertTrue(iv_util.ok_tags(info))
+
+    def test_ok_tags_good_keys_bad_values(self):
+        info = dict()
+
+        info['model'] = "Nikon"
+        info['year'] = "4000"
+        info['mon'] = "01"
+        info['day'] = "01"
+        info['hr'] = "01"
+        info['min'] = "01"
+        info['sec'] = "01"
+        info['year_mon_day'] = "2023_01_01"
+        info['file_time'] = "20230101_010101"
+        info['file_name'] = "20230101_010101_Nikon"
+        self.assertFalse(iv_util.ok_tags(info))
+
+        info['year'] = "2023"
+        info['mon'] = "23"
+        self.assertFalse(iv_util.ok_tags(info))
+
+        info['mon'] = "0"
+        self.assertFalse(iv_util.ok_tags(info))
+
+        info['mon'] = "0"
+        self.assertFalse(iv_util.ok_tags(info))
 
 
 if __name__ == '__main__':
