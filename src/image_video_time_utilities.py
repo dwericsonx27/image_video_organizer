@@ -190,7 +190,7 @@ def ok_tags(info : Dict) -> bool:
     if int(info['day']) >= 32:
         return False
     
-    if int(info['day']) < 0:
+    if int(info['day']) <= 0:
         return False
     
     if not info.get('hr') or len(info['hr']) != 2:

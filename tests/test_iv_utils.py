@@ -161,10 +161,35 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         info['mon'] = "23"
         self.assertFalse(iv_util.ok_tags(info))
 
-        info['mon'] = "0"
+        info['mon'] = "00"
         self.assertFalse(iv_util.ok_tags(info))
 
-        info['mon'] = "0"
+        info['mon'] = "01"
+        info['day'] = "50"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['day'] = "00"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['day'] = "01"
+        info['hr'] = "50"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['hr'] = "-1"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['hr'] = "01"
+        info['min'] = "60"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['min'] = "-1"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['min'] = "01"
+        info['sec'] = "60"
+        self.assertFalse(iv_util.ok_tags(info))
+        
+        info['sec'] = "-1"
         self.assertFalse(iv_util.ok_tags(info))
 
 
