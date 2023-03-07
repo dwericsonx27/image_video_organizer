@@ -115,9 +115,9 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
             recursive_remove(folder_name(file_name_1))
             recursive_remove(folder_name(file_name_2))
 
-#    def test_process_folder(self):
+    def test_process_folder(self):
 
-#        iv_util.process_folder("/tmp/tA", "/tmp/tB")
+        iv_util.process_folder("/tmp/tA", "/tmp/tB")
 
     def test_ok_tags_insufficient_data(self):
         info = dict()

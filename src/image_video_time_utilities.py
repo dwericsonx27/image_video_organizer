@@ -141,12 +141,15 @@ def jpeg_info(image_file_name : str) -> Dict:
             info['year'] = yearmonday[0:4]
             info['mon'] = yearmonday[4:6]
             info['day'] = yearmonday[6:8]
-           
             info['year_mon_day'] = f"{info['year']}_{info['mon']}_{info['day']}"
+
             hrminsec = origination[11:19].replace(":", "")
             info['hr'] = hrminsec[0:2]
             info['min'] = hrminsec[2:4]
             info['sec'] = hrminsec[4:6]
+            info['hr_min_sec'] = f"{info['hr']}_{info['min']}_{info['sec']}"
+
+            info['yyyymmdd_hhmmss'] = f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}"
 
             info['file_time'] = f'{yearmonday}_{hrminsec}'
             info['file_name'] = f"{info['file_time']}_{info['model']}.jpg"
@@ -220,6 +223,9 @@ def ok_tags(info : Dict) -> bool:
     if int(info['sec']) < 0:
         return False
     
+    if not info.get('hr_min_sec') or len(info['hr_min_sec']) != 8:
+        return False
+    
     if not info.get('year_mon_day') or len(info['year_mon_day']) != 10:
         return False
     
@@ -235,8 +241,9 @@ def ok_tags(info : Dict) -> bool:
 
 def process_file(fullpath_filename: str, dest_dir: str, extention: str, info : Dict) -> bool:
     try:
-        out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])
-        out_file = os.path.join(out_dir, info['filename'])
+        #out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])\
+        out_dir = os.path.join(os.path.join(dest_dir, info['year']), info['hr_min_sec'])
+        out_file = os.path.join(out_dir, info['file_name'])
         if os.path.isfile(out_file):
             if filecmp.cmp(out_file, fullpath_filename):
                 print(f'DELETE {fullpath_filename}.')
@@ -428,6 +435,9 @@ def process_folder(src_folder, dst_folder) -> None:
                     file_info = jpeg_info(fullpath_filename)
                     for key, value in file_info.items():
                         print(f'{key}, {value}')
+
+                    if ok_tags(file_info):
+                        process_file(fullpath_filename, dst_folder, "jpg", file_info)
 
                 elif file_type == "video/mp4":
                     process_mp4(fullpath_filename, dst_folder)
