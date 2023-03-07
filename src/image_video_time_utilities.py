@@ -239,45 +239,56 @@ def ok_tags(info : Dict) -> bool:
     
 
 
-def process_file(fullpath_filename: str, dest_dir: str, extention: str, info : Dict) -> bool:
+def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: str, info : Dict) -> bool:
     try:
         #out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])\
-        out_dir = os.path.join(os.path.join(dest_dir, info['year']), info['hr_min_sec'])
-        out_file = os.path.join(out_dir, info['file_name'])
-        if os.path.isfile(out_file):
-            if filecmp.cmp(out_file, fullpath_filename):
-                print(f'DELETE {fullpath_filename}.')
+        out_dir = os.path.join(os.path.join(dest_folder, info['year']), info['hr_min_sec'])
+        dest_fullpath_filename = os.path.join(out_dir, info['file_name'])
+        if os.path.isfile(dest_fullpath_filename):
+            # Destination file already exists
+            if filecmp.cmp(dest_fullpath_filename, src_fullpath_filename):
+                # Existing destination file and src file are the same, so delete the src file.
+                print(f'DELETE {src_fullpath_filename}.')
                 time.sleep(0.2)
-                os.remove(fullpath_filename)
+                os.remove(src_fullpath_filename)
             else:
-                print(f'COPY {fullpath_filename} ADD UNIQUE DESIGNATOR.')
+                # Existing desination file have different contents.  Create unit index, so file
+                # can be copied over.
+                print(f'COPY {src_fullpath_filename} ADD UNIQUE DESIGNATOR.')
                 i = 1
-                out_file = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{extention}" )
-                while os.path.isfile(out_file):
+                dest_fullpath_filename = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
+                while os.path.isfile(dest_fullpath_filename):
                     i = i + 1
-                    out_file = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{extention}" )
+                    dest_fullpath_filename = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
                 # Copy file over.
                 os.makedirs(out_dir, exist_ok=True)
-                copyfile(fullpath_filename, out_file)
-                os.remove(fullpath_filename)
-                print(f'Copied {fullpath_filename} to {out_file}')
+                copyfile(src_fullpath_filename, dest_fullpath_filename)
+                os.remove(src_fullpath_filename)
+                print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
         else:
+            # Destination file does not exist.
             # Open the directory and look for a file of a similar name.
-            if identical_file_already_exists(out_dir, info['yyyymmdd_hhmmss'], fullpath_filename):
-                print(f'DELETE {fullpath_filename}.')
+            # Note that some extensions can be upper or lower case, this function is used
+            # to find files identical destination files just with extention where case does
+            # not match. 
+            if identical_file_already_exists(out_dir, info['yyyymmdd_hhmmss'], src_fullpath_filename):
+                print(f'DELETE {src_fullpath_filename}.')
                 time.sleep(0.2)
-                os.remove(fullpath_filename)
+                os.remove(src_fullpath_filename)
                 # so we should be able to delete the source....
             else:
                 # Copy file over.
+                
+                # need try catch around this, in a new function
+                
                 os.makedirs(out_dir, exist_ok=True)
-                copyfile(fullpath_filename, out_file)
-                os.remove(fullpath_filename)
-                print(f'Copied {fullpath_filename} to {out_file}')
+                copyfile(src_fullpath_filename, dest_fullpath_filename)
+                os.remove(src_fullpath_filename)
+                print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
     except Exception as e:
         print(f'EXIF data not found, using media info instead.')
         try:
-            process_video(fullpath_filename, dest_dir)
+            process_video(src_fullpath_filename, dest_folder)
             print(f'EXIF data not found, using media info instead.')
         except Exception as e2:
             print(f'Exception: {e2}')
