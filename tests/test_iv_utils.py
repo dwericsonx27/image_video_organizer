@@ -132,6 +132,7 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         info['hr'] = "01"
         info['min'] = "01"
         info['sec'] = "01"
+        info['hr_min_sec'] = "01_01_01"
         info['year_mon_day'] = "2023_01_01"
         info['file_time'] = "20230101_010101"
         info['file_name'] = "20230101_010101_Nikon"

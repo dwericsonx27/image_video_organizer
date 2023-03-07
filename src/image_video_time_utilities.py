@@ -236,14 +236,20 @@ def ok_tags(info : Dict) -> bool:
         return False
     
     return True
-    
+
+def copy_file(src_fullpath_filename: str, dest_folder: str, dest_fullpath_filename: str) -> bool:
+    try:
+        os.makedirs(dest_folder, exist_ok=True)
+        copyfile(src_fullpath_filename, dest_fullpath_filename)
+    except Exception as e:
+        print(f'Exception: {e}')
 
 
 def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: str, info : Dict) -> bool:
     try:
         #out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])\
-        out_dir = os.path.join(os.path.join(dest_folder, info['year']), info['hr_min_sec'])
-        dest_fullpath_filename = os.path.join(out_dir, info['file_name'])
+        dest_folder = os.path.join(os.path.join(dest_folder, info['year']), info['hr_min_sec'])
+        dest_fullpath_filename = os.path.join(dest_folder, info['file_name'])
         if os.path.isfile(dest_fullpath_filename):
             # Destination file already exists
             if filecmp.cmp(dest_fullpath_filename, src_fullpath_filename):
@@ -256,12 +262,12 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
                 # can be copied over.
                 print(f'COPY {src_fullpath_filename} ADD UNIQUE DESIGNATOR.')
                 i = 1
-                dest_fullpath_filename = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
+                dest_fullpath_filename = os.path.join(dest_folder, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
                 while os.path.isfile(dest_fullpath_filename):
                     i = i + 1
-                    dest_fullpath_filename = os.path.join(out_dir, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
+                    dest_fullpath_filename = os.path.join(dest_folder, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
                 # Copy file over.
-                os.makedirs(out_dir, exist_ok=True)
+                os.makedirs(dest_folder, exist_ok=True)
                 copyfile(src_fullpath_filename, dest_fullpath_filename)
                 os.remove(src_fullpath_filename)
                 print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
@@ -271,7 +277,7 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
             # Note that some extensions can be upper or lower case, this function is used
             # to find files identical destination files just with extention where case does
             # not match. 
-            if identical_file_already_exists(out_dir, info['yyyymmdd_hhmmss'], src_fullpath_filename):
+            if identical_file_already_exists(dest_folder, info['yyyymmdd_hhmmss'], src_fullpath_filename):
                 print(f'DELETE {src_fullpath_filename}.')
                 time.sleep(0.2)
                 os.remove(src_fullpath_filename)
@@ -281,7 +287,7 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
                 
                 # need try catch around this, in a new function
                 
-                os.makedirs(out_dir, exist_ok=True)
+                os.makedirs(dest_folder, exist_ok=True)
                 copyfile(src_fullpath_filename, dest_fullpath_filename)
                 os.remove(src_fullpath_filename)
                 print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
