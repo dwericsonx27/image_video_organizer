@@ -4,7 +4,6 @@ sys.path.append('../src')  #needed for command line execution
 sys.path.append('src')  # needed for execution via Visual Studio Code
 
 from msg_logger import MsgLogger, LogEntryType
-import msg_logger
 
 class TestImageVideoTimeUtilities(unittest.TestCase):
     
@@ -14,7 +13,7 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         self.assertEqual(0, logger.log_size())
         
     def test_add_one_message(self):
-        logger = msg_logger.MsgLogger()
+        logger = MsgLogger()
         logger.add_log("test message", LogEntryType.Information)
         
         self.assertEqual(1, logger.log_size())
@@ -30,6 +29,7 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         msg = "test1"
         logger.add_log(msg, LogEntryType.Information)
         self.assertRaises(Exception ,logger.get_log_message, 1000)
+        self.assertRaises(Exception ,logger.get_log_message, -1)
         
         
         

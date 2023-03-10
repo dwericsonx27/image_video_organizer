@@ -28,10 +28,10 @@ class MsgLogger:
             print(self.log[i])
             
     def get_log_message(self, index: int) -> str:
-        if index < self.msg_cnt:
-            return self.log[index]['msg']
-        else:
+        if index < 0 or index >= self.msg_cnt:
             raise Exception("Out of bounds index.")
+        
+        return self.log[index]['msg']
             
     def log_size(self) -> int:
         return self.msg_cnt

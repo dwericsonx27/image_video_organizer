@@ -14,6 +14,9 @@ import filecmp
 from shutil import copyfile
 from typing import Tuple
 
+# TODO: abstract types here
+from msg_logger import MsgLogger, LogEntryType
+
 def find_files(source_dir, file_ext):
     for dirpath, dirnames, filenames in os.walk(source_dir):
         for f_name in filenames:
@@ -123,7 +126,7 @@ def jpeg_name(image_file_name: str) -> Tuple[str, str, str, str, str, str, str, 
             print("========================================")
             raise e
         
-def jpeg_info(image_file_name : str) -> Dict:
+def jpeg_info(image_file_name : str, logger: MsgLogger) -> Dict:
     info = dict()
 
     with open(image_file_name, 'rb') as image_file:
@@ -156,6 +159,7 @@ def jpeg_info(image_file_name : str) -> Dict:
 
             return info
         except Exception as e:
+            logger.add_log(f"Fail to acquire all needed tags from {image_file_name}.", LogEntryType.Error)
             print(f'EXIF DateTimeOriginal not found!')
             print(f'number of tags = {len(tags)}')
             print(f'tags: {type(tags)}')
@@ -165,77 +169,103 @@ def jpeg_info(image_file_name : str) -> Dict:
             raise e
         
 
-def ok_tags(info : Dict) -> bool:
-    if not info.get('model') or len(info['model']) < 1:
-        return False
+def ok_tags(info : Dict, logger: MsgLogger) -> bool:
+    return_value: bool = True
+
+    if not info.get('model'):
+        logger.add_log("Missing Tag: model")
+        return_value = False    
+    elif len(info['model']) < 1:
+        logger.add_log("Tag: model - empty")
+        return_value = False
     
-    if not info.get('year') or len(info['year']) != 4:
-        return False
+    if not info.get('year'):
+        logger.add_log("Missing Tag: year")
+        return_value = False
+    elif len(info['year']) != 4:
+        logger.add_log("Tag: year - invalid size")
+        return_value = False
+    elif int(info['year']) >= 3000:
+        logger.add_log(f"Tag: year - to large ({info['year']})")
+        return_value = False
+    elif int(info['year']) < 0:
+        logger.add_log(f"Tag: year - to small ({info['year']})")
+        return_value = False
     
-    if int(info['year']) >= 3000:
-        return False
+    if not info.get('mon'):
+        logger.add_log("Missing Tag: mon")
+        return_value = False
+    elif len(info['mon']) != 2:
+        logger.add_log(f"Tag: mon - character count is not 2 ({info['mon']})")
+        return_value = False
+    elif int(info['mon']) >= 13:
+        logger.add_log(f"Tag: mon - value too large ({info['mon']})")
+        return_value = False
+    elif int(info['mon']) < 1:
+        logger.add_log(f"Tag: mon - value too small ({info['mon']})")
+        return_value = False
     
-    if int(info['year']) < 0:
-        return False
+    if not info.get('day'):
+        logger.add_log("Missing Tag: day")
+        return_value = False
+    elif len(info['day']) != 2:
+        logger.add_log(f"Tag: day - character count is not 2 ({info['day']})")
+        return_value = False
+    elif int(info['day']) >= 32:
+        logger.add_log(f"Tag: day - value too large ({info['day']})")
+        return_value = False
+    elif int(info['day']) <= 0:
+        logger.add_log(f"Tag: day - value too small ({info['day']})")
+        return_value = False
     
-    if not info.get('mon') or len(info['mon']) != 2:
-        return False
+    if not info.get('hr'):
+        return_value = False
+    elif len(info['hr']) != 2:
+        return_value = False
+    elif int(info['hr']) >= 24:
+        return_value = False
+    elif int(info['hr']) < 0:
+        return_value = False
     
-    if int(info['mon']) >= 13:
-        return False
+    if not info.get('min'):
+        return_value = False
+    elif len(info['min']) != 2:
+        return_value = False
+    elif int(info['min']) >= 60:
+        return_value = False
+    elif int(info['min']) < 0:
+        return_value = False
     
-    if int(info['mon']) < 1:
-        return False
+    if not info.get('sec'):
+        return_value = False
+    elif len(info['sec']) != 2:
+        return_value = False
+    elif int(info['sec']) >= 60:
+        return_value = False
+    elif int(info['sec']) < 0:
+        return_value = False
     
-    if not info.get('day') or len(info['day']) != 2:
-        return False
+    if not info.get('hr_min_sec'):
+        return_value = false
+    elif len(info['hr_min_sec']) != 8:
+        return_value = False
     
-    if int(info['day']) >= 32:
-        return False
+    if not info.get('year_mon_day'):
+        return_value = False
+    elif len(info['year_mon_day']) != 10:
+        return_value = False
     
-    if int(info['day']) <= 0:
-        return False
+    if not info.get('file_time'):
+        return_value = False
+    elif len(info['file_time']) != 15:
+        return_value = False
     
-    if not info.get('hr') or len(info['hr']) != 2:
-        return False
+    if not info.get('file_name'):
+        return_value = False
+    elif len(info['file_name']) < 15:
+        return_value = False
     
-    if int(info['hr']) >= 24:
-        return False
-    
-    if int(info['hr']) < 0:
-        return False
-    
-    if not info.get('min') or len(info['min']) != 2:
-        return False
-    
-    if int(info['min']) >= 60:
-        return False
-    
-    if int(info['min']) < 0:
-        return False
-    
-    if not info.get('sec') or len(info['sec']) != 2:
-        return False
-    
-    if int(info['sec']) >= 60:
-        return False
-    
-    if int(info['sec']) < 0:
-        return False
-    
-    if not info.get('hr_min_sec') or len(info['hr_min_sec']) != 8:
-        return False
-    
-    if not info.get('year_mon_day') or len(info['year_mon_day']) != 10:
-        return False
-    
-    if not info.get('file_time') or len(info['file_time']) != 15:
-        return False
-    
-    if not info.get('file_name') or len(info['file_name']) < 15:
-        return False
-    
-    return True
+    return return_value
 
 def copy_file(src_fullpath_filename: str, dest_folder: str, dest_fullpath_filename: str) -> bool:
     try:
@@ -436,7 +466,7 @@ def process_video(file_name: str, dest_dir: str) -> None:
             for s in stdout_values:
                 print(f'tag: {s}')
 
-def process_folder(src_folder, dst_folder) -> None:
+def process_folder(src_folder: str, dst_folder: str, logger: MsgLogger) -> None:
     f_types = magic.Magic(mime=True)
     occurences: Dict[str, int] = {}
 
@@ -449,11 +479,11 @@ def process_folder(src_folder, dst_folder) -> None:
                 print(f"filename : {fullpath_filename}, {file_type}")
                 if file_type == "image/jpeg": 
                     #process_image(fullpath_filename, dst_folder, "jpg")
-                    file_info = jpeg_info(fullpath_filename)
+                    file_info = jpeg_info(fullpath_filename, logger)
                     for key, value in file_info.items():
                         print(f'{key}, {value}')
 
-                    if ok_tags(file_info):
+                    if ok_tags(file_info, logger):
                         process_file(fullpath_filename, dst_folder, "jpg", file_info)
 
                 elif file_type == "video/mp4":
