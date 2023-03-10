@@ -5,6 +5,7 @@ import shutil
 import sys
 sys.path.append('../src')  #needed for command line execution
 sys.path.append('src')  # needed for execution via Visual Studio Code
+from msg_logger import MsgLogger, LogEntryType
 
 import image_video_time_utilities as iv_util
 
@@ -120,7 +121,7 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
 
         info['abc'] = "asdfafd"
 
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, MsgLogger()))
 
     def test_ok_tags(self):
         info = dict()
@@ -137,10 +138,11 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         info['file_time'] = "20230101_010101"
         info['file_name'] = "20230101_010101_Nikon"
 
-        self.assertTrue(iv_util.ok_tags(info))
+        self.assertTrue(iv_util.ok_tags(info, MsgLogger()))
 
     def test_ok_tags_good_keys_bad_values(self):
         info = dict()
+        logger = MsgLogger()
 
         info['model'] = "Nikon"
         info['year'] = "4000"
@@ -152,46 +154,46 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         info['year_mon_day'] = "2023_01_01"
         info['file_time'] = "20230101_010101"
         info['file_name'] = "20230101_010101_Nikon"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
 
         info['year'] = "2023"
         info['mon'] = "23"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
 
         info['mon'] = "00"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
 
         info['mon'] = "01"
         info['day'] = "50"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['day'] = "00"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['day'] = "01"
         info['hr'] = "50"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['hr'] = "-1"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['hr'] = "01"
         info['min'] = "60"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['min'] = "-1"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['min'] = "01"
         info['sec'] = "60"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
         
         info['sec'] = "-1"
-        self.assertFalse(iv_util.ok_tags(info))
+        self.assertFalse(iv_util.ok_tags(info, logger))
 
     def test_process_folder(self):
 
-        iv_util.process_folder("/tmp/tA", "/tmp/tB")
+        iv_util.process_folder("/tmp/tA", "/tmp/tB", MsgLogger())
 
 if __name__ == '__main__':
     unittest.main()

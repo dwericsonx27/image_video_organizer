@@ -173,49 +173,49 @@ def ok_tags(info : Dict, logger: MsgLogger) -> bool:
     return_value: bool = True
 
     if not info.get('model'):
-        logger.add_log("Missing Tag: model")
+        logger.add_log("Missing Tag: model", LogEntryType.Error)
         return_value = False    
     elif len(info['model']) < 1:
-        logger.add_log("Tag: model - empty")
+        logger.add_log("Tag: model - empty", LogEntryType.Error)
         return_value = False
     
     if not info.get('year'):
-        logger.add_log("Missing Tag: year")
+        logger.add_log("Missing Tag: year", LogEntryType.Error)
         return_value = False
     elif len(info['year']) != 4:
-        logger.add_log("Tag: year - invalid size")
+        logger.add_log("Tag: year - invalid size", LogEntryType.Error)
         return_value = False
     elif int(info['year']) >= 3000:
-        logger.add_log(f"Tag: year - to large ({info['year']})")
+        logger.add_log(f"Tag: year - to large ({info['year']})", LogEntryType.Error)
         return_value = False
     elif int(info['year']) < 0:
-        logger.add_log(f"Tag: year - to small ({info['year']})")
+        logger.add_log(f"Tag: year - to small ({info['year']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('mon'):
-        logger.add_log("Missing Tag: mon")
+        logger.add_log("Missing Tag: mon", LogEntryType.Error)
         return_value = False
     elif len(info['mon']) != 2:
-        logger.add_log(f"Tag: mon - character count is not 2 ({info['mon']})")
+        logger.add_log(f"Tag: mon - character count is not 2 ({info['mon']})", LogEntryType.Error)
         return_value = False
     elif int(info['mon']) >= 13:
-        logger.add_log(f"Tag: mon - value too large ({info['mon']})")
+        logger.add_log(f"Tag: mon - value too large ({info['mon']})", LogEntryType.Error)
         return_value = False
     elif int(info['mon']) < 1:
-        logger.add_log(f"Tag: mon - value too small ({info['mon']})")
+        logger.add_log(f"Tag: mon - value too small ({info['mon']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('day'):
-        logger.add_log("Missing Tag: day")
+        logger.add_log("Missing Tag: day", LogEntryType.Error)
         return_value = False
     elif len(info['day']) != 2:
-        logger.add_log(f"Tag: day - character count is not 2 ({info['day']})")
+        logger.add_log(f"Tag: day - character count is not 2 ({info['day']})", LogEntryType.Error)
         return_value = False
     elif int(info['day']) >= 32:
-        logger.add_log(f"Tag: day - value too large ({info['day']})")
+        logger.add_log(f"Tag: day - value too large ({info['day']})", LogEntryType.Error)
         return_value = False
     elif int(info['day']) <= 0:
-        logger.add_log(f"Tag: day - value too small ({info['day']})")
+        logger.add_log(f"Tag: day - value too small ({info['day']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('hr'):
@@ -246,7 +246,7 @@ def ok_tags(info : Dict, logger: MsgLogger) -> bool:
         return_value = False
     
     if not info.get('hr_min_sec'):
-        return_value = false
+        return_value = False
     elif len(info['hr_min_sec']) != 8:
         return_value = False
     
