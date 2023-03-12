@@ -219,65 +219,85 @@ def ok_tags(info : Dict, logger: MsgLogger) -> bool:
         return_value = False
     
     if not info.get('hr'):
+        logger.add_log("Missing Tag: hr", LogEntryType.Error)
         return_value = False
     elif len(info['hr']) != 2:
+        logger.add_log(f"Tag: hr - character count is not 2 ({info['hr']})", LogEntryType.Error)
         return_value = False
     elif int(info['hr']) >= 24:
+        logger.add_log(f"Tag: hr - value too large ({info['hr']})", LogEntryType.Error)
         return_value = False
     elif int(info['hr']) < 0:
+        logger.add_log(f"Tag: hr - value too small ({info['hr']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('min'):
+        logger.add_log("Missing Tag: min", LogEntryType.Error)
         return_value = False
     elif len(info['min']) != 2:
+        logger.add_log(f"Tag: min - character count is not 2 ({info['min']})", LogEntryType.Error)
         return_value = False
     elif int(info['min']) >= 60:
+        logger.add_log(f"Tag: min - value too large ({info['min']})", LogEntryType.Error)
         return_value = False
     elif int(info['min']) < 0:
+        logger.add_log(f"Tag: min - value too small ({info['min']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('sec'):
+        logger.add_log("Missing Tag: sec", LogEntryType.Error)
         return_value = False
     elif len(info['sec']) != 2:
+        logger.add_log(f"Tag: sec - character count is not 2 ({info['sec']})", LogEntryType.Error)
         return_value = False
     elif int(info['sec']) >= 60:
+        logger.add_log(f"Tag: sec - value too large ({info['sec']})", LogEntryType.Error)
         return_value = False
     elif int(info['sec']) < 0:
+        logger.add_log(f"Tag: sec - value too small ({info['sec']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('hr_min_sec'):
+        logger.add_log("Missing Composite Tag: hr_min_sec", LogEntryType.Error)
         return_value = False
     elif len(info['hr_min_sec']) != 8:
+        logger.add_log(f"Composite Tag: hr_min_sec - character count is not 8 ({info['hr_min_sec']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('year_mon_day'):
+        logger.add_log("Missing Composite Tag: year_mon_day", LogEntryType.Error)
         return_value = False
     elif len(info['year_mon_day']) != 10:
+        logger.add_log(f"Composite Tag: year_mon_day - character count is not 10 ({info['year_mon_day']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('file_time'):
+        logger.add_log("Missing Composite Tag: file_time", LogEntryType.Error)
         return_value = False
     elif len(info['file_time']) != 15:
+        logger.add_log(f"Composite Tag: file_time - character count is not 15 ({info['file_time']})", LogEntryType.Error)
         return_value = False
     
     if not info.get('file_name'):
+        logger.add_log("Missing Composite Tag: file_name", LogEntryType.Error)
         return_value = False
     elif len(info['file_name']) < 15:
+        logger.add_log(f"Composite Tag: file_name - character count is not at least 15 ({info['file_name']})", LogEntryType.Error)
         return_value = False
     
     return return_value
 
-def copy_file(src_fullpath_filename: str, dest_folder: str, dest_fullpath_filename: str) -> bool:
+def copy_file(src_fullpath_filename: str, dest_folder: str, dest_fullpath_filename: str, logger: MsgLogger) -> bool:
     try:
         os.makedirs(dest_folder, exist_ok=True)
         copyfile(src_fullpath_filename, dest_fullpath_filename)
     except Exception as e:
+        logger.add_log(f"Copy file error: {src_fullpath_filename} to {dest_folder} {dest_fullpath_filename}", LogEntryType.Error)
         print(f'Exception: {e}')
 
 
-def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: str, info : Dict) -> bool:
+def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: str, info : Dict, logger: MsgLogger) -> bool:
     try:
-        #out_dir = os.path.join(os.path.join(info['dest_dir'], info['year']), info['hr_min_sec'])\
         dest_folder = os.path.join(os.path.join(dest_folder, info['year']), info['hr_min_sec'])
         dest_fullpath_filename = os.path.join(dest_folder, info['file_name'])
         if os.path.isfile(dest_fullpath_filename):
@@ -288,7 +308,7 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
                 time.sleep(0.2)
                 os.remove(src_fullpath_filename)
             else:
-                # Existing desination file have different contents.  Create unit index, so file
+                # Existing desination file have different contents.  Create unique index, so file
                 # can be copied over.
                 print(f'COPY {src_fullpath_filename} ADD UNIQUE DESIGNATOR.')
                 i = 1
@@ -297,10 +317,9 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
                     i = i + 1
                     dest_fullpath_filename = os.path.join(dest_folder, f"{info['year']}{info['mon']}{info['day']}_{info['hr']}{info['min']}{info['sec']}_{info['model']}_{i}.{file_extention}" )
                 # Copy file over.
-                os.makedirs(dest_folder, exist_ok=True)
-                copyfile(src_fullpath_filename, dest_fullpath_filename)
-                os.remove(src_fullpath_filename)
-                print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
+                if copy_file(src_fullpath_filename, dest_folder, dest_fullpath_filename, logger):
+                    os.remove(src_fullpath_filename)
+                    print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
         else:
             # Destination file does not exist.
             # Open the directory and look for a file of a similar name.
@@ -313,14 +332,9 @@ def process_file(src_fullpath_filename: str, dest_folder: str, file_extention: s
                 os.remove(src_fullpath_filename)
                 # so we should be able to delete the source....
             else:
-                # Copy file over.
-                
-                # need try catch around this, in a new function
-                
-                os.makedirs(dest_folder, exist_ok=True)
-                copyfile(src_fullpath_filename, dest_fullpath_filename)
-                os.remove(src_fullpath_filename)
-                print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
+                if copy_file(src_fullpath_filename, dest_folder, dest_fullpath_filename, logger):
+                    os.remove(src_fullpath_filename)
+                    print(f'Copied {src_fullpath_filename} to {dest_fullpath_filename}')
     except Exception as e:
         print(f'EXIF data not found, using media info instead.')
         try:
@@ -484,7 +498,7 @@ def process_folder(src_folder: str, dst_folder: str, logger: MsgLogger) -> None:
                         print(f'{key}, {value}')
 
                     if ok_tags(file_info, logger):
-                        process_file(fullpath_filename, dst_folder, "jpg", file_info)
+                        process_file(fullpath_filename, dst_folder, "jpg", file_info, logger)
 
                 elif file_type == "video/mp4":
                     process_mp4(fullpath_filename, dst_folder)

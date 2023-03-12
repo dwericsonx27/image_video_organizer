@@ -12,5 +12,7 @@ if ~arg_status:
 logger = MsgLogger()
 process_status = iv_util.process_folder(src, dst, logger)
 
+logger.output_log()
+
 if ~process_status:
     print(f"Errors processing the folder: {src}")
