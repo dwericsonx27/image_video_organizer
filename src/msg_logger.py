@@ -26,6 +26,7 @@ class MsgLogger:
         i: int = 0
         while i < self.msg_cnt:
             print(self.log[i])
+            i = i + 1
             
     def get_log_message(self, index: int) -> str:
         if index < 0 or index >= self.msg_cnt:

@@ -24,7 +24,9 @@ def find_files(source_dir, file_ext):
                 yield os.path.join(dirpath, f_name)
                 
 def process_args(arg_list) -> Tuple[bool, str, str]:
+    print(f'arg list = {len(arg_list)}')
     if len(arg_list) == 3:
+        print("true")
         return True, arg_list[1], arg_list[2]
     else:
         return False, "", ""
@@ -166,7 +168,8 @@ def jpeg_info(image_file_name : str, logger: MsgLogger) -> Dict:
             for t in tags:
                 print(f'tag: {t}')
             print("========================================")
-            raise e
+            return info
+            #raise e
         
 
 def ok_tags(info : Dict, logger: MsgLogger) -> bool:
@@ -486,19 +489,23 @@ def process_folder(src_folder: str, dst_folder: str, logger: MsgLogger) -> None:
 
     try:
         for fullpath_filename in find_files(src_folder, ""):
+
+            print(f'fullpath_filename = {fullpath_filename}')
             file_type = None
             file_info: Dict[str, str] = {}
             try:
                 file_type = f_types.from_file(fullpath_filename)
                 print(f"filename : {fullpath_filename}, {file_type}")
                 if file_type == "image/jpeg": 
-                    #process_image(fullpath_filename, dst_folder, "jpg")
-                    file_info = jpeg_info(fullpath_filename, logger)
-                    for key, value in file_info.items():
-                        print(f'{key}, {value}')
+                    try:
+                        file_info = jpeg_info(fullpath_filename, logger)
+                        for key, value in file_info.items():
+                            print(f'{key}, {value}')
 
-                    if ok_tags(file_info, logger):
-                        process_file(fullpath_filename, dst_folder, "jpg", file_info, logger)
+                        if ok_tags(file_info, logger):
+                            process_file(fullpath_filename, dst_folder, "jpg", file_info, logger)
+                    except Exception as e:
+                        logger.add_log(f"Failed to get jpeg tags from {fullpath_filename}", LogEntryType.Error)
 
                 elif file_type == "video/mp4":
                     process_mp4(fullpath_filename, dst_folder)
@@ -516,7 +523,7 @@ def process_folder(src_folder: str, dst_folder: str, logger: MsgLogger) -> None:
                 print(f"file type exception : {e}")
 
     except FileNotFoundError:
-        print(f"ERROR: source directory ({source_dir}) does not exist!")
+        print(f"ERROR: source directory ({src_folder}) does not exist!")
 
     except Exception as e:
         print(f"ERROR: {e}")
