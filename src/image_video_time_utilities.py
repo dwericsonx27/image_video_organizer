@@ -161,15 +161,9 @@ def jpeg_info(image_file_name : str, logger: MsgLogger) -> Dict:
 
             return info
         except Exception as e:
+            logger.add_log(f"jpeg reading error: {e}", LogEntryType.Error)
             logger.add_log(f"Fail to acquire all needed tags from {image_file_name}.", LogEntryType.Error)
-            print(f'EXIF DateTimeOriginal not found!')
-            print(f'number of tags = {len(tags)}')
-            print(f'tags: {type(tags)}')
-            for t in tags:
-                print(f'tag: {t}')
-            print("========================================")
-            return info
-            #raise e
+            raise e
         
 
 def ok_tags(info : Dict, logger: MsgLogger) -> bool:

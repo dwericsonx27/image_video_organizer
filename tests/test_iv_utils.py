@@ -116,6 +116,18 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
             recursive_remove(folder_name(file_name_1))
             recursive_remove(folder_name(file_name_2))
 
+    def test_jpeg_info_bad_jpeg_file(self):
+        file_name = "/tmp/bad.jpg"
+
+        try:
+            self.assertTrue(create_file(file_name, "abcdefghijklmnop"))
+            logger = MsgLogger()
+            iv_util.jpeg_info(file_name, logger)
+        except Exception as e:
+            print(f'Exception was {e}')
+        finally:
+            recursive_remove(folder_name(file_name))
+
     def test_ok_tags_insufficient_data(self):
         info = dict()
 
