@@ -13,8 +13,15 @@ def folder_name(full_path_file_name : str) -> str:
     folder_path = pathlib.Path(full_path_file_name)
     return str(folder_path.parent)
 
-def recursive_remove(folder_name : str) -> None:
-    shutil.rmtree(folder_name)
+def recursive_remove(file_name : str) -> None:
+    try:
+        shutil.rmtree(folder_name(file_name))
+    except Exception as e:
+        print(f'Exception in recursive_remove() was {e}')
+        try:
+            shutil.rmtree(file_name)
+        except Exception as e2:
+            print(f'Exception in recursive_remove() was {e2}')
 
 def create_file(file_name : str, content : str) -> bool:
     rtnval = False
@@ -113,8 +120,8 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         except Exception as e:
             print(f'Exception was {e}')
         finally:
-            recursive_remove(folder_name(file_name_1))
-            recursive_remove(folder_name(file_name_2))
+            recursive_remove(file_name_1)
+            recursive_remove(file_name_2)
 
     def test_jpeg_info_bad_jpeg_file(self):
         file_name = "/tmp/bad.jpg"
@@ -126,7 +133,7 @@ class TestImageVideoTimeUtilities(unittest.TestCase):
         except Exception as e:
             print(f'Exception was {e}')
         finally:
-            recursive_remove(folder_name(file_name))
+            recursive_remove(file_name)
 
     def test_ok_tags_insufficient_data(self):
         info = dict()
